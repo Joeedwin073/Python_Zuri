@@ -3,9 +3,10 @@
 # Initialize page
 
 import random
-
-database = {} #dictionary
-
+import validation
+import database
+import os
+import funds
 
 def init ():
     print('Welcome to bank PHP')
@@ -17,10 +18,11 @@ def init ():
     """))
 
     if haveAccount == 1:
-        print()
+        print('**********Login**********')
+        print('Welcome to the login page \n')
         login ()
     elif haveAccount == 2:
-        print()
+        print('Welcome to the registration page \n')
         register()
 
 # banking operations
@@ -80,50 +82,71 @@ def bankOperations3 ():
 
 # register function
 def register ():
-    print('Welcome to the registration page \n')
-
+    
+    
     useremail = input('What is your email? \n')
+    email_validation = validation.useremail_validation(useremail)
 
-    firstName = input('What is your first name? \n')
+    if email_validation:
+        firstName = input('What is your first name? \n')
 
-    lastName = input('What is your last name? \n')
+        lastName = input('What is your last name? \n')
 
-    username = firstName + lastName
+        userPassword = input('What is your password \n')
 
-    userPassword = input('What is your password \n')
+        # Validate the user input for password
+        is_valid_password = validation.password_validation(userPassword)
+        
+        if is_valid_password:
+            username = firstName + lastName
 
-    accountNumber = accountNumberGenerator ()
+            accountNumber = accountNumberGenerator()
 
-    database[accountNumber] = [firstName, lastName, useremail, userPassword, username]
-    print(database)
+            available_amount = funds.create_available_amount(accountNumber)
 
-    print('Your account has been created... ')
+            database.create_user(accountNumber, str([firstName , lastName, useremail, userPassword, username]))
 
-    print("Here's your username " + username)
-    print("Here's your account number %d make sure to keep it safe" % accountNumber )
+            funds.create_user_funds(accountNumber, available_amount)
 
-    login ()
+            print(available_amount)
+
+            print('Your account has been created... ')
+
+            print("Here's your username " + username)
+            print("Here's your account number %d make sure to keep it safe" % accountNumber )
+
+            login ()
+        else:
+            register()
+    else:
+        register()
+
 
 
 # login function
 def login (): 
-    print('**********Login**********')
+    userAccountNumber = input("What is your account number? \n")
 
-    userAccountNumber = int(input("What is your account number? \n"))
+    is_account_valid = validation.account_number_validation(userAccountNumber)
 
-    for accountNumber,userDetails in database.items():
-        if accountNumber == userAccountNumber:
-            userPassword = input('What is your password? \n')
-            if userPassword == userDetails[3]:
-                bankOperations(userDetails[4])
+    if is_account_valid:
+        
+        is_login_valid = validation.login_validation(userAccountNumber)
+
+        if is_login_valid: 
+            user_password = input("What is your password? ")   
+            is_password_valid = validation.password_validation(user_password)
+            if is_password_valid:
+                bankOperations2()
             else:
-                print('User password not correct!!!')
-                login ()
+                login()
         else:
-            print('User account number not correct!!!')
-            login ()
+            login()
+    else:
+        print('Account Number is not valid')
+        login()
 
-
+    
 
 # Account number generator
 def accountNumberGenerator ():
@@ -152,12 +175,16 @@ def withdrawal ():
     print('You have withdrawn %d' % withdrawalAmount)
     print('Amount remaining: %d' % availableAmount - withdrawalAmount)
 
+# def check_balance():
+    #account_number = input('What is your account number? ')
+    #account_balance = funds.read_available_amount(account_number)
+    #print(account_balance)
+
+
 
 
 
 
 init()
 
-#   num = random.randrange(1111111111,9999999999)
-#   print(num)
 
